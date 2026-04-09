@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>KochList</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+</head>
+
+<body>
+
+  <!-- ========================= -->
+  <!-- SCREEN 1: START -->
+  <!-- ========================= -->
+  <div id="screen-start" class="screen">
+
+    <!-- Oberer Bereich -->
+    <div class="top">
+      <h1>Was möchtest du kochen?</h1>
+    </div>
+
+    <!-- Mittlerer Bereich -->
+    <div class="middle">
+
+      <!-- Sprachaufnahme -->
+      <div class="voice-wrapper">
+        <button id="voice-btn" class="voice-btn">🎤</button>
+      </div>
+
+      <!-- Texteingabe -->
+      <input
+        id="text-input"
+        type="text"
+        placeholder="z. B. Pasta für 2 Personen"
+      />
+
+    </div>
+
+    <!-- Unterer Bereich -->
+    <div class="bottom">
+      <button id="generate-btn" class="primary">
+        Start
+      </button>
+    </div>
+
+  </div>
+
+
+  <!-- ========================= -->
+  <!-- SCREEN 2: LOADING -->
+  <!-- ========================= -->
+  <div id="screen-loading" class="screen hidden">
+
+    <div class="middle">
+
+      <!-- Lade-Animation -->
+      <div class="loader"></div>
+
+      <!-- Dynamischer Text -->
+      <h2 id="loading-text">
+        Analysiere Zutaten...
+      </h2>
+
+    </div>
+
+  </div>
+
+
+  <!-- ========================= -->
+  <!-- SCREEN 3: RESULT -->
+  <!-- ========================= -->
+  <div id="screen-result" class="screen hidden">
+
+    <!-- Titel des Gerichts -->
+    <div class="top">
+      <h2 id="dish-name"></h2>
+    </div>
+
+    <!-- Einkaufsliste -->
+    <div class="middle">
+
+      <!-- Zutatenliste in einer Karte -->
+      <div class="list-card">
+        <ul id="ingredients-list"></ul>
+      </div>
+
+      <!-- Toggle Basiszutaten -->
+      <div class="toggle-card">
+        <span class="toggle-label">Basiszutaten ausblenden</span>
+        <label class="switch">
+          <input type="checkbox" id="toggle-base" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- Aktionen unten -->
+    <div class="bottom">
+
+      <!-- REWE Hauptbutton -->
+      <button class="store-btn-main" data-url="https://www.rewe.de">
+        · Bei REWE bestellen
+      </button>
+
+      <!-- EDEKA -->
+      <button class="store-btn-secondary" data-url="https://www.edeka.de">
+        · Bei EDEKA bestellen
+      </button>
+
+      <!-- Zurück -->
+      <button id="back-btn">
+        Zurück
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ========================= -->
+  <!-- SCREEN 4: PAYWALL -->
+  <!-- ========================= -->
+  <div id="screen-paywall" class="screen hidden">
+
+    <div class="middle">
+
+      <!-- Hinweis -->
+      <h2>Kostenloser Test beendet</h2>
+      <p>Bald verfügbar als Premium-Version</p>
+
+      <!-- Zurück zur Startseite -->
+      <button id="back-home" class="primary">
+        Zurück
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ========================= -->
+  <!-- SCRIPT -->
+  <!-- ========================= -->
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
