@@ -69,6 +69,15 @@ const DISH_KEYWORDS = {
   carbonara: [
     "carbonara", "pasta carbonara", "spaghetti carbonara",
     "spaghetti", "pasta"
+  ],
+  salat: [
+    "salat", "gemischter salat", "grüner salat", "beilagensalat"
+  ],
+  gulasch: [
+    "gulasch", "ungarischer gulasch", "rindergulasch", "gulaschsuppe"
+  ],
+  tomatensuppe: [
+    "tomatensuppe", "tomaten suppe", "suppe mit tomaten", "cremesuppe tomaten"
   ]
 }
 

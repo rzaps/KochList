@@ -81,6 +81,56 @@ export const recipes = {
       { name: "Salz", base: true },
       { name: "Pfeffer", base: true }
     ]
+  },
+
+  salat: {
+    name: "Gemischter Salat",
+    ingredients: [
+      { name: "Kopfsalat", amount: 1, unit: "Stk" },
+      { name: "Tomaten", amount: 2, unit: "Stk" },
+      { name: "Gurke", amount: 0.5, unit: "Stk" },
+      { name: "Paprika", amount: 1, unit: "Stk" },
+      { name: "Rote Zwiebel", amount: 0.5, unit: "Stk" },
+      { name: "Olivenöl", amount: 3, unit: "EL" },
+      { name: "Essig", amount: 1, unit: "EL" },
+      { name: "Senf", amount: 0.5, unit: "TL" },
+      { name: "Salz", base: true },
+      { name: "Pfeffer", base: true }
+    ]
+  },
+
+  gulasch: {
+    name: "Ungarischer Gulasch",
+    ingredients: [
+      { name: "Rindfleisch (Schulter)", amount: 400, unit: "g" },
+      { name: "Zwiebeln", amount: 300, unit: "g" },
+      { name: "Paprikapulver (edelsüß)", amount: 2, unit: "EL" },
+      { name: "Tomatenmark", amount: 1, unit: "EL" },
+      { name: "Rinderbrühe", amount: 400, unit: "ml" },
+      { name: "Paprika (rot)", amount: 1, unit: "Stk" },
+      { name: "Knoblauch", amount: 2, unit: "Zehe" },
+      { name: "Kümmel", amount: 0.5, unit: "TL" },
+      { name: "Öl", base: true },
+      { name: "Salz", base: true },
+      { name: "Pfeffer", base: true }
+    ]
+  },
+
+  tomatensuppe: {
+    name: "Tomatensuppe",
+    ingredients: [
+      { name: "Tomaten", amount: 500, unit: "g" },
+      { name: "Tomatenmark", amount: 2, unit: "EL" },
+      { name: "Zwiebel", amount: 1, unit: "Stk" },
+      { name: "Knoblauch", amount: 2, unit: "Zehe" },
+      { name: "Gemüsebrühe", amount: 400, unit: "ml" },
+      { name: "Sahne", amount: 100, unit: "ml" },
+      { name: "Basilikum", amount: 1, unit: "Bund" },
+      { name: "Olivenöl", base: true },
+      { name: "Salz", base: true },
+      { name: "Pfeffer", base: true },
+      { name: "Zucker", base: true }
+    ]
   }
 
 }
