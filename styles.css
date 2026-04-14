@@ -164,9 +164,10 @@ button:active {
   right: 8px;
   width: 36px !important;
   height: 36px !important;
-  border-radius: 50%;
+  min-height: 36px !important;
+  border-radius: 50% !important;
   font-size: 18px;
-  padding: 0;
+  padding: 0 !important;
   display: flex;
   align-items: center;
   justify-content: center;
