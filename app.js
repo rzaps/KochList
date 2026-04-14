@@ -28,13 +28,9 @@ function increaseUsage() {
   localStorage.setItem("usage", getUsage() + 1)
 }
 
-function checkUsage() {
-  if (getUsage() >= 5) {
-    showScreen("screen-paywall")
-    return false
-  }
-  increaseUsage()
-  return true
+function showPaywallBanner() {
+  const banner = document.getElementById("paywall-banner")
+  if (banner) banner.classList.remove("hidden")
 }
 
 
@@ -42,48 +38,48 @@ function checkUsage() {
 // PARSER (einfache Logik statt AI)
 // =========================
 
+const DISH_KEYWORDS = {
+  bolognese: [
+    "bolognese", "hacksoße", "hackfleischsoße", "fleischsoße",
+    "pasta bolognese", "spaghetti bolognese"
+  ],
+  kartoffelbrot: [
+    "kartoffelbrot", "kartoffel brot", "kartoffel", "brot backen",
+    "brot mit kartoffel"
+  ],
+  zwiebelkuchen: [
+    "zwiebelkuchen", "zwiebel kuchen", "zwiebelkuche", "zwiebelkuche",
+    "zwiebelkuchen backen"
+  ],
+  frikadellen: [
+    "frikadelle", "frikadellen", "bulette", "buletten",
+    "hackbraten", "hack braten", "fleischküchle"
+  ],
+  carbonara: [
+    "carbonara", "pasta carbonara", "spaghetti carbonara",
+    "spaghetti", "pasta"
+  ]
+}
+
 function parseInput(text) {
-  const lower = text.toLowerCase()
+  const lower = text.toLowerCase().trim()
 
   // Personenanzahl erkennen
   let persons = 1
-  const match = lower.match(/\d+/)
-  if (match) persons = Number(match[0])
+  const match = lower.match(/(\d+)\s*(person|personen|leute|portionen|portion)?/)
+  if (match) persons = Math.min(Number(match[1]), 20)
 
-  // Gericht erkennen
-  let dish = "carbonara" // Standard
+  // Gericht erkennen – längste Übereinstimmung gewinnt
+  let dish = null
+  let bestMatchLength = 0
 
-  // Pasta Bolognese
-  if (lower.includes("bolognese") || 
-      (lower.includes("pasta") && lower.includes("hack"))) {
-    dish = "bolognese"
-  }
-  
-  // Kartoffelbrot
-  else if (lower.includes("kartoffelbrot") || 
-           lower.includes("kartoffel")) {
-    dish = "kartoffelbrot"
-  }
-  
-  // Zwiebelkuchen
-  else if (lower.includes("zwiebelkuchen") || 
-           lower.includes("zwiebelkuchen") ||
-           (lower.includes("zwiebel") && lower.includes("kuchen"))) {
-    dish = "zwiebelkuchen"
-  }
-  
-  // Frikadellen
-  else if (lower.includes("frikadelle") || 
-           lower.includes("bulette") ||
-           (lower.includes("hack") && lower.includes("braten"))) {
-    dish = "frikadellen"
-  }
-  
-  // Pasta Carbonara
-  else if (lower.includes("carbonara") || 
-           (lower.includes("pasta") && lower.includes("ei")) ||
-           (lower.includes("spaghetti") && lower.includes("bacon"))) {
-    dish = "carbonara"
+  for (const [key, keywords] of Object.entries(DISH_KEYWORDS)) {
+    for (const kw of keywords) {
+      if (lower.includes(kw) && kw.length > bestMatchLength) {
+        dish = key
+        bestMatchLength = kw.length
+      }
+    }
   }
 
   return { dish, persons }
@@ -121,36 +117,45 @@ function buildIngredients(recipe, persons, hideBase) {
 
 function renderResult(recipeKey, persons) {
   const recipe = recipes[recipeKey]
-
   if (!recipe) return
 
   document.getElementById("dish-name").textContent = recipe.name
 
   const hideBase = document.getElementById("toggle-base").checked
-
   const list = document.getElementById("ingredients-list")
+  const emptyMsg = document.getElementById("empty-msg")
   list.innerHTML = ""
 
   const ingredients = buildIngredients(recipe, persons, hideBase)
 
-  ingredients.forEach((i, index) => {
-    const li = document.createElement("li")
-
-    li.innerHTML = `
-      <span class="item-name">${i.name}</span>
-      <span class="item-amount">${i.amount ? i.amount + " " + i.unit : ""}</span>
-      <button class="remove-btn">✕</button>
-    `
-
-    list.appendChild(li)
-  })
+  if (ingredients.length === 0) {
+    emptyMsg.classList.remove("hidden")
+  } else {
+    emptyMsg.classList.add("hidden")
+    ingredients.forEach(i => {
+      const li = document.createElement("li")
+      li.innerHTML = `
+        <span class="item-name">${i.name}</span>
+        <span class="item-amount">${i.amount ? i.amount + " " + i.unit : ""}</span>
+        <button class="remove-btn">✕</button>
+      `
+      list.appendChild(li)
+    })
+  }
 
   // Entfernen von Elementen
   document.querySelectorAll(".remove-btn").forEach(btn => {
     btn.addEventListener("click", (e) => {
       e.target.parentElement.remove()
+      if (list.children.length === 0) {
+        emptyMsg.classList.remove("hidden")
+      }
     })
   })
+
+  // Paywall-Banner nach Nutzungslimit
+  increaseUsage()
+  if (getUsage() > 5) showPaywallBanner()
 }
 
 
@@ -159,14 +164,10 @@ function renderResult(recipeKey, persons) {
 // =========================
 
 function generate() {
-  if (!checkUsage()) return
-
   const input = document.getElementById("text-input").value
-
   if (!input) return
 
   localStorage.setItem("lastQuery", input)
-
   showScreen("screen-loading")
 
   const texts = [
@@ -187,15 +188,23 @@ function generate() {
     clearInterval(interval)
 
     const parsed = parseInput(input)
-
-    // AI fallback (optional)
     const aiResult = await aiGenerateRecipe(input)
-
     const dish = aiResult?.dish || parsed.dish
-    const persons = parsed.persons
+
+    if (!dish) {
+      showScreen("screen-start")
+      const inp = document.getElementById("text-input")
+      inp.style.borderColor = "red"
+      inp.placeholder = "Gericht nicht erkannt – bitte genauer eingeben"
+      setTimeout(() => {
+        inp.style.borderColor = ""
+        inp.placeholder = "z. B. Pasta für 2 Personen"
+      }, 3000)
+      return
+    }
 
     showScreen("screen-result")
-    renderResult(dish, persons)
+    renderResult(dish, parsed.persons)
 
   }, 1200)
 }
@@ -267,16 +276,10 @@ document.getElementById("toggle-base").addEventListener("change", () => {
   renderResult(parsed.dish, parsed.persons)
 })
 
-document.getElementById("back-home").addEventListener("click", () => {
-  showScreen("screen-start")
-})
-
 // Weiterleitung zu Supermarkt
-document.querySelectorAll(".store-btn-main, .store-btn-secondary").forEach(btn => {
+document.querySelectorAll(".store-btn-main").forEach(btn => {
   btn.addEventListener("click", () => {
-    if (btn.dataset.url) {
-      window.open(btn.dataset.url, "_blank")
-    }
+    if (btn.dataset.url) window.open(btn.dataset.url, "_blank")
   })
 })
 
