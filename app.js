@@ -1,4 +1,15 @@
 // =========================
+// PLAUSIBLE EVENTS
+// =========================
+
+function track(event, props) {
+  if (typeof window.plausible === "function") {
+    window.plausible(event, props ? { props } : undefined)
+  }
+}
+
+
+// =========================
 // APP-LOGIK (Shopping AI MVP)
 // =========================
 
@@ -167,6 +178,8 @@ function generate() {
   const input = document.getElementById("text-input").value
   if (!input) return
 
+  track("Generate", { query: input })
+
   localStorage.setItem("lastQuery", input)
   showScreen("screen-loading")
 
@@ -240,6 +253,7 @@ function initVoice() {
     document.getElementById("text-input").value = transcript
     btn.textContent = "🎤"
     btn.style.animationPlayState = "running"
+    track("Voice Input")
     generate()
   }
 
@@ -279,6 +293,7 @@ document.getElementById("toggle-base").addEventListener("change", () => {
 // Weiterleitung zu Supermarkt
 document.querySelectorAll(".store-btn-main").forEach(btn => {
   btn.addEventListener("click", () => {
+    track("Order Click", { store: btn.dataset.url || "unknown" })
     if (btn.dataset.url) window.open(btn.dataset.url, "_blank")
   })
 })
