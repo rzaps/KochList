@@ -107,13 +107,32 @@ function parseInput(text) {
 
 
 // =========================
-// AI-ERWEITERUNG (VORBEREITET)
+// AI-ERWEITERUNG (OpenAI via Vercel Proxy)
 // =========================
 
-// Hier kann später eine echte KI (API) integriert werden
 async function aiGenerateRecipe(input) {
-  console.log("AI called with:", input)
-  return null
+  try {
+    const response = await fetch("/api/recipe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: input })
+    })
+
+    if (!response.ok) return null
+
+    const data = await response.json()
+
+    if (!data.ingredients || !Array.isArray(data.ingredients)) return null
+
+    return {
+      dishName: data.dishName || input,
+      ingredients: data.ingredients
+    }
+
+  } catch (err) {
+    console.warn("AI nicht verfügbar, Fallback auf lokalen Parser:", err)
+    return null
+  }
 }
 
 
@@ -135,18 +154,35 @@ function buildIngredients(recipe, persons, hideBase) {
 // ERGEBNIS RENDERN
 // =========================
 
-function renderResult(recipeKey, persons) {
-  const recipe = recipes[recipeKey]
-  if (!recipe) return
+function renderResult(source, persons) {
+  // source: либо строка-ключ из recipes.js, либо объект { dishName, ingredients } от AI
+  let dishName
+  let ingredients
 
-  document.getElementById("dish-name").textContent = recipe.name
+  if (typeof source === "string") {
+    // Lokaler Fallback aus recipes.js
+    const recipe = recipes[source]
+    if (!recipe) return
+    dishName = recipe.name
+    const hideBase = document.getElementById("toggle-base").checked
+    ingredients = buildIngredients(recipe, persons, hideBase)
+  } else {
+    // AI-Ergebnis
+    dishName = source.dishName
+    const hideBase = document.getElementById("toggle-base").checked
+    ingredients = source.ingredients
+      .filter(i => hideBase ? !i.base : true)
+      .map(i => ({
+        ...i,
+        amount: i.amount ? Math.round(i.amount * persons * 10) / 10 : null
+      }))
+  }
 
-  const hideBase = document.getElementById("toggle-base").checked
+  document.getElementById("dish-name").textContent = dishName
+
   const list = document.getElementById("ingredients-list")
   const emptyMsg = document.getElementById("empty-msg")
   list.innerHTML = ""
-
-  const ingredients = buildIngredients(recipe, persons, hideBase)
 
   if (ingredients.length === 0) {
     emptyMsg.classList.remove("hidden")
@@ -156,7 +192,7 @@ function renderResult(recipeKey, persons) {
       const li = document.createElement("li")
       li.innerHTML = `
         <span class="item-name">${i.name}</span>
-        <span class="item-amount">${i.amount ? i.amount + " " + i.unit : ""}</span>
+        <span class="item-amount">${i.amount ? i.amount + " " + (i.unit || "") : ""}</span>
         <button class="remove-btn">✕</button>
       `
       list.appendChild(li)
@@ -211,7 +247,16 @@ function generate() {
 
     const parsed = parseInput(input)
     const aiResult = await aiGenerateRecipe(input)
-    const dish = aiResult?.dish || parsed.dish
+
+    if (aiResult) {
+      // AI-Ergebnis direkt rendern
+      showScreen("screen-result")
+      renderResult(aiResult, parsed.persons)
+      return
+    }
+
+    // Fallback: lokaler Parser
+    const dish = parsed.dish
 
     if (!dish) {
       showScreen("screen-start")
@@ -296,7 +341,8 @@ document.getElementById("back-btn")?.addEventListener("click", () => {
 document.getElementById("toggle-base").addEventListener("change", () => {
   const input = document.getElementById("text-input").value
   const parsed = parseInput(input)
-  renderResult(parsed.dish, parsed.persons)
+  // При AI-результате toggle перезапускает generate заново — упрощённо
+  if (parsed.dish) renderResult(parsed.dish, parsed.persons)
 })
 
 // Weiterleitung zu Supermarkt
